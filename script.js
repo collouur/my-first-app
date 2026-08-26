@@ -37,12 +37,14 @@ function saveMessages(messages) {
   localStorage.setItem("messages", JSON.stringify(messages));
 }
 
-function deleteMessage(index) {
+function deleteMessage(id) {
   const messages = getMessages();
 
-  messages.splice(index, 1);
+  const updatedMessages = messages.filter(function (message) {
+    return message.id !== id;
+  });
 
-  saveMessages(messages);
+  saveMessages(updatedMessages);
   renderMessages();
 }
 
@@ -60,7 +62,7 @@ function renderMessages() {
     return;
   }
 
-messages.forEach(function (message, index) {
+messages.forEach(function (message) {
   const listItem = document.createElement("li");
 
   const nameElement = document.createElement("strong");
@@ -77,7 +79,7 @@ messages.forEach(function (message, index) {
   deleteButton.classList.add("historyDeleteButton");
 
   deleteButton.addEventListener("click", function () {
-    deleteMessage(index);
+    deleteMessage(message.id);
   });
 
   listItem.appendChild(nameElement);
@@ -117,11 +119,13 @@ greetButton.addEventListener("click", function () {
 
   const messages = getMessages();
 
-  messages.unshift({
-    name: name,
-    role: role,
-    text: messageText
-  });
+ messages.unshift({
+  id: Date.now(),
+  name: name,
+  role: role,
+  text: messageText,
+  createdAt: new Date().toLocaleString()
+});
 
   const latestMessages = messages.slice(0, 5);
 
