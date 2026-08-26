@@ -53,9 +53,19 @@ function renderMessages() {
 
   messages.forEach(function (message) {
   const listItem = document.createElement("li");
-  const messageDate = message.createdAt ? " — " + message.createdAt : "";
 
-  listItem.textContent = message.text + messageDate;
+  const nameElement = document.createElement("strong");
+  nameElement.textContent = message.name;
+
+  const roleElement = document.createElement("span");
+  roleElement.textContent = message.role;
+
+  const dateElement = document.createElement("small");
+  dateElement.textContent = message.createdAt ? message.createdAt : "No date";
+
+  listItem.appendChild(nameElement);
+  listItem.appendChild(roleElement);
+  listItem.appendChild(dateElement);
 
   messageList.appendChild(listItem);
 });
