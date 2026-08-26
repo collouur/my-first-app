@@ -52,11 +52,13 @@ function renderMessages() {
   }
 
   messages.forEach(function (message) {
-    const listItem = document.createElement("li");
-    listItem.textContent = message.text;
+  const listItem = document.createElement("li");
+  const messageDate = message.createdAt ? " — " + message.createdAt : "";
 
-    messageList.appendChild(listItem);
-  });
+  listItem.textContent = message.text + messageDate;
+
+  messageList.appendChild(listItem);
+});
 }
 
 const savedName = localStorage.getItem("name");
