@@ -133,3 +133,17 @@ button:hover {
 .historyDeleteButton:hover {
   background: #4b5563;
 }
+
+.historyEditButton {
+  width: auto;
+  margin-top: 10px;
+  margin-right: 8px;
+  padding: 8px 10px;
+  background: #1d4ed8;
+  color: white;
+  font-size: 12px;
+}
+
+.historyEditButton:hover {
+  background: #2563eb;
+}
