@@ -101,3 +101,22 @@ button:hover {
 #messageList li.empty {
   color: #9ca3af;
 }
+
+#messageList li strong {
+  display: block;
+  font-size: 16px;
+  color: white;
+}
+
+#messageList li span {
+  display: block;
+  margin-top: 4px;
+  color: #d1d5db;
+}
+
+#messageList li small {
+  display: block;
+  margin-top: 8px;
+  color: #9ca3af;
+  font-size: 12px;
+}
