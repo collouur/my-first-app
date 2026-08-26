@@ -4,6 +4,7 @@ const greetButton = document.getElementById("greetButton");
 const clearButton = document.getElementById("clearButton");
 const result = document.getElementById("result");
 const messageList = document.getElementById("messageList");
+
 let editingMessageId = null;
 
 function showError(message) {
@@ -31,7 +32,22 @@ function getMessages() {
     return [];
   }
 
-  return JSON.parse(savedMessages);
+  const messages = JSON.parse(savedMessages);
+
+  const normalizedMessages = messages.map(function (message, index) {
+    return {
+      id: message.id ? message.id : Date.now() + index,
+      name: message.name,
+      role: message.role,
+      text: message.text,
+      createdAt: message.createdAt,
+      updatedAt: message.updatedAt
+    };
+  });
+
+  localStorage.setItem("messages", JSON.stringify(normalizedMessages));
+
+  return normalizedMessages;
 }
 
 function saveMessages(messages) {
@@ -46,6 +62,15 @@ function deleteMessage(id) {
   });
 
   saveMessages(updatedMessages);
+
+  if (editingMessageId === id) {
+    editingMessageId = null;
+    greetButton.textContent = "Generate message";
+    nameInput.value = "";
+    roleInput.value = "";
+    clearResult();
+  }
+
   renderMessages();
 }
 
@@ -74,42 +99,49 @@ function renderMessages() {
     return;
   }
 
-messages.forEach(function (message) {
-  const listItem = document.createElement("li");
+  messages.forEach(function (message) {
+    const listItem = document.createElement("li");
 
-  const nameElement = document.createElement("strong");
-  nameElement.textContent = message.name;
+    const nameElement = document.createElement("strong");
+    nameElement.textContent = message.name;
 
-  const roleElement = document.createElement("span");
-  roleElement.textContent = message.role;
+    const roleElement = document.createElement("span");
+    roleElement.textContent = message.role;
 
-  const dateElement = document.createElement("small");
-  dateElement.textContent = message.createdAt ? message.createdAt : "No date";
+    const dateElement = document.createElement("small");
 
-  const editButton = document.createElement("button");
-  editButton.textContent = "Edit";
-  editButton.classList.add("historyEditButton");
+    if (message.updatedAt) {
+      dateElement.textContent = "Updated: " + message.updatedAt;
+    } else if (message.createdAt) {
+      dateElement.textContent = "Created: " + message.createdAt;
+    } else {
+      dateElement.textContent = "No date";
+    }
 
-  editButton.addEventListener("click", function () {
-    startEditingMessage(message);
+    const editButton = document.createElement("button");
+    editButton.textContent = "Edit";
+    editButton.classList.add("historyEditButton");
+
+    editButton.addEventListener("click", function () {
+      startEditingMessage(message);
+    });
+
+    const deleteButton = document.createElement("button");
+    deleteButton.textContent = "Delete";
+    deleteButton.classList.add("historyDeleteButton");
+
+    deleteButton.addEventListener("click", function () {
+      deleteMessage(message.id);
+    });
+
+    listItem.appendChild(nameElement);
+    listItem.appendChild(roleElement);
+    listItem.appendChild(dateElement);
+    listItem.appendChild(editButton);
+    listItem.appendChild(deleteButton);
+
+    messageList.appendChild(listItem);
   });
-
-  const deleteButton = document.createElement("button");
-  deleteButton.textContent = "Delete";
-  deleteButton.classList.add("historyDeleteButton");
-
-  deleteButton.addEventListener("click", function () {
-    deleteMessage(message.id);
-  });
-
-  listItem.appendChild(nameElement);
-  listItem.appendChild(roleElement);
-  listItem.appendChild(dateElement);
-  listItem.appendChild(editButton);
-  listItem.appendChild(deleteButton);
-
-  messageList.appendChild(listItem);
-});
 }
 
 const savedName = localStorage.getItem("name");
@@ -133,56 +165,53 @@ greetButton.addEventListener("click", function () {
     return;
   }
 
-const messageText = `Welcome aboard, ${name}. Your role is ${role}.`;
+  const messageText = `Welcome aboard, ${name}. Your role is ${role}.`;
 
-localStorage.setItem("name", name);
-localStorage.setItem("role", role);
+  localStorage.setItem("name", name);
+  localStorage.setItem("role", role);
 
-const messages = getMessages();
+  const messages = getMessages();
 
-if (editingMessageId !== null) {
-  const updatedMessages = messages.map(function (message) {
-    if (message.id === editingMessageId) {
-      return {
-        ...message,
-        name: name,
-        role: role,
-        text: messageText,
-        updatedAt: new Date().toLocaleString()
-      };
-    }
+  if (editingMessageId !== null) {
+    const updatedMessages = messages.map(function (message) {
+      if (message.id === editingMessageId) {
+        return {
+          ...message,
+          name: name,
+          role: role,
+          text: messageText,
+          updatedAt: new Date().toLocaleString()
+        };
+      }
 
-    return message;
+      return message;
+    });
+
+    saveMessages(updatedMessages);
+
+    editingMessageId = null;
+    greetButton.textContent = "Generate message";
+
+    showSuccess("Message updated successfully.");
+    renderMessages();
+
+    return;
+  }
+
+  messages.unshift({
+    id: Date.now(),
+    name: name,
+    role: role,
+    text: messageText,
+    createdAt: new Date().toLocaleString()
   });
 
-  saveMessages(updatedMessages);
+  const latestMessages = messages.slice(0, 5);
 
-  clearResult();
+  saveMessages(latestMessages);
+
+  showSuccess(messageText);
   renderMessages();
-  
-  editingMessageId = null;
-  greetButton.textContent = "Generate message";
-
-  showSuccess("Message updated successfully.");
-  renderMessages();
-
-  return;
-}
-
-messages.unshift({
-  id: Date.now(),
-  name: name,
-  role: role,
-  text: messageText,
-  createdAt: new Date().toLocaleString()
-});
-
-const latestMessages = messages.slice(0, 5);
-
-saveMessages(latestMessages);
-
-showSuccess(messageText);
-renderMessages();
 });
 
 clearButton.addEventListener("click", function () {
@@ -192,6 +221,9 @@ clearButton.addEventListener("click", function () {
 
   nameInput.value = "";
   roleInput.value = "";
+
+  editingMessageId = null;
+  greetButton.textContent = "Generate message";
 
   clearResult();
   renderMessages();
