@@ -37,6 +37,15 @@ function saveMessages(messages) {
   localStorage.setItem("messages", JSON.stringify(messages));
 }
 
+function deleteMessage(index) {
+  const messages = getMessages();
+
+  messages.splice(index, 1);
+
+  saveMessages(messages);
+  renderMessages();
+}
+
 function renderMessages() {
   const messages = getMessages();
 
@@ -51,7 +60,7 @@ function renderMessages() {
     return;
   }
 
-  messages.forEach(function (message) {
+messages.forEach(function (message, index) {
   const listItem = document.createElement("li");
 
   const nameElement = document.createElement("strong");
@@ -63,9 +72,18 @@ function renderMessages() {
   const dateElement = document.createElement("small");
   dateElement.textContent = message.createdAt ? message.createdAt : "No date";
 
+  const deleteButton = document.createElement("button");
+  deleteButton.textContent = "Delete";
+  deleteButton.classList.add("historyDeleteButton");
+
+  deleteButton.addEventListener("click", function () {
+    deleteMessage(index);
+  });
+
   listItem.appendChild(nameElement);
   listItem.appendChild(roleElement);
   listItem.appendChild(dateElement);
+  listItem.appendChild(deleteButton);
 
   messageList.appendChild(listItem);
 });
