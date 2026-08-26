@@ -4,6 +4,7 @@ const greetButton = document.getElementById("greetButton");
 const clearButton = document.getElementById("clearButton");
 const result = document.getElementById("result");
 const messageList = document.getElementById("messageList");
+let editingMessageId = null;
 
 function showError(message) {
   result.textContent = message;
@@ -48,6 +49,17 @@ function deleteMessage(id) {
   renderMessages();
 }
 
+function startEditingMessage(message) {
+  editingMessageId = message.id;
+
+  nameInput.value = message.name;
+  roleInput.value = message.role;
+
+  greetButton.textContent = "Update message";
+
+  showSuccess("Editing message. Change the fields and click Update message.");
+}
+
 function renderMessages() {
   const messages = getMessages();
 
@@ -74,6 +86,14 @@ messages.forEach(function (message) {
   const dateElement = document.createElement("small");
   dateElement.textContent = message.createdAt ? message.createdAt : "No date";
 
+  const editButton = document.createElement("button");
+  editButton.textContent = "Edit";
+  editButton.classList.add("historyEditButton");
+
+  editButton.addEventListener("click", function () {
+    startEditingMessage(message);
+  });
+
   const deleteButton = document.createElement("button");
   deleteButton.textContent = "Delete";
   deleteButton.classList.add("historyDeleteButton");
@@ -85,6 +105,7 @@ messages.forEach(function (message) {
   listItem.appendChild(nameElement);
   listItem.appendChild(roleElement);
   listItem.appendChild(dateElement);
+  listItem.appendChild(editButton);
   listItem.appendChild(deleteButton);
 
   messageList.appendChild(listItem);
@@ -112,14 +133,43 @@ greetButton.addEventListener("click", function () {
     return;
   }
 
-  const messageText = `Welcome aboard, ${name}. Your role is ${role}.`;
+const messageText = `Welcome aboard, ${name}. Your role is ${role}.`;
 
-  localStorage.setItem("name", name);
-  localStorage.setItem("role", role);
+localStorage.setItem("name", name);
+localStorage.setItem("role", role);
 
-  const messages = getMessages();
+const messages = getMessages();
 
- messages.unshift({
+if (editingMessageId !== null) {
+  const updatedMessages = messages.map(function (message) {
+    if (message.id === editingMessageId) {
+      return {
+        ...message,
+        name: name,
+        role: role,
+        text: messageText,
+        updatedAt: new Date().toLocaleString()
+      };
+    }
+
+    return message;
+  });
+
+  saveMessages(updatedMessages);
+
+  clearResult();
+  renderMessages();
+  
+  editingMessageId = null;
+  greetButton.textContent = "Generate message";
+
+  showSuccess("Message updated successfully.");
+  renderMessages();
+
+  return;
+}
+
+messages.unshift({
   id: Date.now(),
   name: name,
   role: role,
@@ -127,12 +177,12 @@ greetButton.addEventListener("click", function () {
   createdAt: new Date().toLocaleString()
 });
 
-  const latestMessages = messages.slice(0, 5);
+const latestMessages = messages.slice(0, 5);
 
-  saveMessages(latestMessages);
+saveMessages(latestMessages);
 
-  showSuccess(messageText);
-  renderMessages();
+showSuccess(messageText);
+renderMessages();
 });
 
 clearButton.addEventListener("click", function () {
