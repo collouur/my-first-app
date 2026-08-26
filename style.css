@@ -120,3 +120,16 @@ button:hover {
   color: #9ca3af;
   font-size: 12px;
 }
+
+.historyDeleteButton {
+  width: auto;
+  margin-top: 10px;
+  padding: 8px 10px;
+  background: #374151;
+  color: #e5e7eb;
+  font-size: 12px;
+}
+
+.historyDeleteButton:hover {
+  background: #4b5563;
+}
